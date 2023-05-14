@@ -407,7 +407,7 @@ class TransPoseR(nn.Module):
 
         x = self.layer1(x)
         x = self.layer2(x)
-        x = self.reduce(x)
+        x = self.reduce(x) # [_, 256, 32, 24]
 
         bs, c, h, w = x.shape
         x = x.flatten(2).permute(2, 0, 1)

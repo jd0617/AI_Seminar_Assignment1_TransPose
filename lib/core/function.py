@@ -26,11 +26,13 @@ logger = logging.getLogger(__name__)
 
 
 def train(config, train_loader, model, criterion, optimizer, epoch,
-          output_dir, tb_log_dir, writer_dict):
+          output_dir, tb_log_dir, writer_dict, scaler=None):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
     acc = AverageMeter()
+
+    total_epochs = config.TRAIN.END_EPOCH
 
     # switch to train mode
     model.train()
@@ -41,25 +43,42 @@ def train(config, train_loader, model, criterion, optimizer, epoch,
         data_time.update(time.time() - end)
 
         # compute output
-        outputs = model(input)
+        # start_t = time.time()
+        with torch.cuda.amp.autocast(enabled=config.AMP):
 
-        target = target.cuda(non_blocking=True)
-        target_weight = target_weight.cuda(non_blocking=True)
+            outputs = model(input)
 
-        if isinstance(outputs, list):
-            loss = criterion(outputs[0], target, target_weight)
-            for output in outputs[1:]:
-                loss += criterion(output, target, target_weight)
-        else:
-            output = outputs
-            loss = criterion(output, target, target_weight)
+            target = target.cuda(non_blocking=True)
+            target_weight = target_weight.cuda(non_blocking=True)
+
+            if isinstance(outputs, list):
+                loss = criterion(outputs[0], target, target_weight)
+                for output in outputs[1:]:
+                    loss += criterion(output, target, target_weight)
+            else:
+                output = outputs
+                loss = criterion(output, target, target_weight)
+
+        # dur = time.time() - start_t
+        # print("{}".format(dur))
 
         # loss = criterion(output, target, target_weight)
 
         # compute gradient and do update step
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+        # optimizer.zero_grad()
+        # loss.backward()
+        # optimizer.step()
+
+        if config.AMP:
+            scaler.scale(loss).backward()
+            scaler.step(optimizer)
+            scaler.update()
+            optimizer.zero_grad()
+        else:
+            # compute gradient and do update step
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
 
         # measure accuracy and record loss
         losses.update(loss.item(), input.size(0))
@@ -73,13 +92,13 @@ def train(config, train_loader, model, criterion, optimizer, epoch,
         end = time.time()
 
         if i % config.PRINT_FREQ == 0:
-            msg = 'Epoch: [{0}][{1}/{2}]\t' \
+            msg = 'Epoch: [{0}/{1}][{2}/{3} steps]\t' \
                   'Time {batch_time.val:.3f}s ({batch_time.avg:.3f}s)\t' \
                   'Speed {speed:.1f} samples/s\t' \
                   'Data {data_time.val:.3f}s ({data_time.avg:.3f}s)\t' \
                   'Loss {loss.val:.5f} ({loss.avg:.5f})\t' \
                   'Accuracy {acc.val:.3f} ({acc.avg:.3f})'.format(
-                      epoch, i, len(train_loader), batch_time=batch_time,
+                      epoch, total_epochs, i, len(train_loader), batch_time=batch_time,
                       speed=input.size(0)/batch_time.val,
                       data_time=data_time, loss=losses, acc=acc)
             logger.info(msg)
@@ -91,8 +110,8 @@ def train(config, train_loader, model, criterion, optimizer, epoch,
             writer_dict['train_global_steps'] = global_steps + 1
 
             prefix = '{}_{}'.format(os.path.join(output_dir, 'train'), i)
-            # save_debug_images(config, input, meta, target, pred*4, output,
-            #                   prefix)
+            save_debug_images(config, input, meta, target, pred*4, output,
+                              prefix)
 
 
 def validate(config, val_loader, val_dataset, model, criterion, output_dir,

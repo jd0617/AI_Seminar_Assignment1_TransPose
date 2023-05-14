@@ -13,6 +13,8 @@ import argparse
 import os
 import pprint
 import shutil
+import time
+from datetime import timedelta, datetime
 
 import numpy as np
 import random
@@ -45,7 +47,10 @@ def parse_args():
     # general
     parser.add_argument('--cfg',
                         help='experiment configure file name',
-                        required=True,
+                        # required=True,
+                        # default="/tmp/TransPose/experiments/coco/transpose_r/TP_R_256x192_d256_h1024_enc3_mh8.yaml",
+                        default="/tmp/TransPose/experiments/coco/transpose_h/TP_H_w32_256x192_stage3_1_4_d64_h128_relu_enc4_mh1.yaml",
+                        # default="/tmp/TransPose/experiments/coco/transpose_h/TP_H_w48_256x192_stage3_1_4_d192_h384_relu_enc4_mh1.yaml",
                         type=str)
 
     parser.add_argument('opts',
@@ -79,6 +84,8 @@ def parse_args():
 def main():
     args = parse_args()
     update_config(cfg, args)
+    start_datetime = datetime.now()
+    start_time = time.monotonic()
 
     logger, final_output_dir, tb_log_dir = create_logger(
         cfg, args.cfg, 'train')
@@ -91,10 +98,32 @@ def main():
     torch.backends.cudnn.deterministic = cfg.CUDNN.DETERMINISTIC
     torch.backends.cudnn.enabled = cfg.CUDNN.ENABLED
 
-    seed = 22
+    seed = cfg.RANDOM_SEED
     torch.manual_seed(seed)
     np.random.seed(seed)
     random.seed(seed)
+    torch.cuda.manual_seed(seed)
+
+    logger.info("=============================================================")
+    if torch.cuda.is_available:
+        logger.info("CUDA is AVAILABLE.")
+        logger.info("CUDA toolkit version: {}".format(torch.version.cuda))
+        logger.info("Total GPUs: {}".format(torch.cuda.device_count()))
+        logger.info("CURRENT GPU: {}".format(torch.cuda.current_device()))
+        logger.info("GPU currently using: {}".format(torch.cuda.get_device_name()))
+    else:
+        print("CUDA is NOT AVAILABLE")
+    logger.info("=============================================================")
+    logger.info("Experiment Start Time: {}".format(start_datetime))
+    logger.info("=============================================================")
+    print("SEED:", seed)
+    print("CUDNN_BENCHMARK:", cfg.CUDNN.BENCHMARK)
+    print("CUDNN_DETERMINISTIC:", cfg.CUDNN.DETERMINISTIC)
+    print("CUDNN_ENABLED:", cfg.CUDNN.ENABLED)
+    print("=============================================================")
+    logger.info("Pytorch AMP enabled: {}".format(str(cfg.AMP)))
+    logger.info("=============================================================")
+
 
     model = eval('models.'+cfg.MODEL.NAME+'.get_pose_net')(
         cfg, is_train=True
@@ -118,7 +147,7 @@ def main():
     )
 
     model = torch.nn.DataParallel(model, device_ids=cfg.GPUS).cuda()
-    
+    # model = model.cuda()
 
     # define loss function (criterion) and optimizer
     criterion = JointsMSELoss(
@@ -170,6 +199,11 @@ def main():
         final_output_dir, 'checkpoint.pth'
     )
 
+    if cfg.AMP:
+        scaler = torch.cuda.amp.GradScaler(enabled=True)
+    else:
+        scaler = None
+
     if cfg.AUTO_RESUME and os.path.exists(checkpoint_file):
         logger.info("=> loading checkpoint '{}'".format(checkpoint_file))
         checkpoint = torch.load(checkpoint_file)
@@ -181,6 +215,9 @@ def main():
         writer_dict['valid_global_steps'] = checkpoint['valid_global_steps']
 
         model.load_state_dict(checkpoint['state_dict'])
+
+        if cfg.AMP:
+            scaler.load_state_dict(checkpoint['scaler'])
 
         optimizer.load_state_dict(checkpoint['optimizer'])
         logger.info("=> loaded checkpoint '{}' (epoch {})".format(
@@ -194,15 +231,16 @@ def main():
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
         optimizer, cfg.TRAIN.END_EPOCH, eta_min=cfg.TRAIN.LR_END, last_epoch=last_epoch)
 
-    model.cuda()
-
+    # model.cuda()
 
     for epoch in range(begin_epoch, cfg.TRAIN.END_EPOCH):
+
+        estart = time.time()
 
         logger.info("=> current learning rate is {:.6f}".format(lr_scheduler.get_last_lr()[0]))
         # train for one epoch
         train(cfg, train_loader, model, criterion, optimizer, epoch,
-              final_output_dir, tb_log_dir, writer_dict)
+              final_output_dir, tb_log_dir, writer_dict, scaler)
 
         # evaluate on validation set
         perf_indicator = validate(
@@ -218,8 +256,7 @@ def main():
         else:
             best_model = False
 
-        logger.info('=> saving checkpoint to {}'.format(final_output_dir))
-        save_checkpoint({
+        states = {
             'epoch': epoch + 1,
             'model': cfg.MODEL.NAME,
             'state_dict': model.state_dict(),
@@ -228,7 +265,16 @@ def main():
             'optimizer': optimizer.state_dict(),
             'train_global_steps': writer_dict['train_global_steps'],
             'valid_global_steps': writer_dict['valid_global_steps'],
-        }, best_model, final_output_dir)
+        }
+
+        if cfg.AMP:
+            states['scaler'] = scaler.state_dict()
+
+        logger.info('=> saving checkpoint to {}'.format(final_output_dir))
+        save_checkpoint(states, best_model, final_output_dir)
+
+        time_taken_msg = "Time taken for 1 epoch: %.2fs" % (time.time() - estart)
+        logger.info(time_taken_msg)
 
     final_model_state_file = os.path.join(
         final_output_dir, 'final_state.pth'
@@ -238,6 +284,14 @@ def main():
     )
     torch.save(model.module.state_dict(), final_model_state_file)
     writer_dict['writer'].close()
+
+    end_time = time.monotonic()
+    end_datetime = datetime.now()
+
+    duration = timedelta(seconds=end_time - start_time)
+    logger.info("Experiment start at: {}".format(start_datetime))
+    logger.info("Experiment End Time: {}".format(end_datetime))
+    logger.info("Time taken: {}".format(duration))
 
 
 if __name__ == '__main__':

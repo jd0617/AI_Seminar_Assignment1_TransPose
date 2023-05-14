@@ -25,6 +25,8 @@ _C.PRINT_FREQ = 20
 _C.AUTO_RESUME = False
 _C.PIN_MEMORY = True
 _C.RANK = 0
+_C.RANDOM_SEED = 24
+_C.AMP = True
 
 # Cudnn related params
 _C.CUDNN = CN()
@@ -42,7 +44,7 @@ _C.MODEL.TAG_PER_JOINT = True
 _C.MODEL.TARGET_TYPE = 'gaussian'
 _C.MODEL.IMAGE_SIZE = [256, 256]  # width * height, ex: 192 * 256
 _C.MODEL.HEATMAP_SIZE = [64, 64]  # width * height, ex: 24 * 32
-_C.MODEL.SIGMA = 2
+_C.MODEL.SIGMA = 2.0
 _C.MODEL.EXTRA = CN(new_allowed=True)
 # Transformer
 _C.MODEL.BOTTLENECK_NUM = 0
