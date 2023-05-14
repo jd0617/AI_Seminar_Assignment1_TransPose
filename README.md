@@ -15,9 +15,10 @@ The second modification is the Ground truth heatmap. The default ground truth he
 
 |     Model      | Input size | Sigma | AP    | Ap .5 | AP .75 | AP (M) | AP (L) |  AR   | AR .5 | AR .75 | AR (M) | AR (L) |
 | :------------: | :--------: | ----- | ----- | ----- | :----: | :----: | :----: | :---: | :---: | :----: | :----: | :----: |
-| TransPose-R-Enc3 |  256x192   | 2.0 | 0.723 | 0.915 | 0.795  | 0.692  | 0.769  | 0.753 | 0.925 | 0.815  | 0.718  | 0.804  |
-| TransPose-R-Enc3 |  256x192   | 1.5 | 0.720 | 0.914 | 0.792  | 0.688  | 0.769  | 0.751 | 0.921 | 0.815  | 0.715  | 0.805  |
+| TransPose-R-Enc3 |  256x192   |  2.0 | 0.723 | 0.915 | 0.795  | 0.692  | 0.769  | 0.753 | 0.925 | 0.815  | 0.718  | 0.804  |
+| TransPose-R-Enc3 |  256x192   |  1.5 | 0.720 | 0.914 | 0.792  | 0.688  | 0.769  | 0.751 | 0.921 | 0.815  | 0.715  | 0.805  |
 
+### Pseudo code
 
 
 ## Environment, Framework and Installation
@@ -67,7 +68,7 @@ Change the location of dataset and pretrained models in /experiment/coco/transpo
 ### Run in terminal
 #### Train on COCO train2017 dataset
 ```bash
-python tools/train.py --cfg experiments/coco/transpose_r/TP_R_256x192_d256_h1024_enc4_mh8.yaml
+python tools/train.py --cfg experiments/coco/transpose_r/TP_R_256x192_d256_h1024_enc3_mh8.yaml
 ```
 ### Run in PyCharm
 #### Train on COCO train2017 dataset
