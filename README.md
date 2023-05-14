@@ -7,7 +7,7 @@ This is a repository about the Assignment 1 of subject AI Seminar 2023-1. The ai
 ### Modification
 I made some minor modifications based-on the default TransPose project. First, I applied Automatic Mixed Precision(AMP) to speed up the learning of the model while overcoming the limitation of computing resources. AMP enables the model to be trained with half precision and consumes less memory during the training while maintaining consistent accuracy. The AMP is implemented using the built-in torch.amp package. For more details about the AMP please refer to https://developer.nvidia.com/automatic-mixed-precision and https://pytorch.org/docs/stable/amp.html.
 
-The second modification is the Ground truth heatmap. The default ground truth heatmaps are constructed by covering a 2D Gaussian kernel onto the keypoints with standard deviation of 2 and corresponding keypoint's coordinate as its centre. I modified the value of standard deviation to 1.5 which the activated area of the heatmap will become relative smaller. In the CNN-based baseline HPE model such as SimpleBaseline(https://github.com/microsoft/human-pose-estimation.pytorch) and HRNet(https://github.com/HRNet/HRNet-Human-Pose-Estimation), model trained using ground truth heatmap with standard deviation of 1.5 achieved a slightly performance boost. 
+The second modification is the Ground truth heatmap. The default ground truth heatmaps are constructed by covering a 2D Gaussian kernel onto the keypoints with standard deviation of 2 and corresponding keypoint's coordinate as its centre. I modified the value of standard deviation to 1.5 which the activated area of the heatmap will become relative smaller. In the CNN-based baseline HPE model such as [SimpleBaseline](https://github.com/microsoft/human-pose-estimation.pytorch) and [HRNet](https://github.com/HRNet/HRNet-Human-Pose-Estimation), model trained using ground truth heatmap with standard deviation of 1.5 achieved a slightly performance boost. 
 
 ## Environment, Framework and Installation
 ### Environment and Framework
@@ -16,9 +16,9 @@ The second modification is the Ground truth heatmap. The default ground truth he
 - Environment: conda environment
 - Framework (version): PyTorch (1.13.1)
 - Dataset: COCO dataset
-- Required packages: same as original TransPose [https://github.com/yangsenius/TransPose/blob/main/requirements.txt]
+- Required packages: same as original [TransPose](https://github.com/yangsenius/TransPose/blob/main/requirements.txt)
 ### Installation
-For installation of packages, please refer to original repository (https://github.com/yangsenius/TransPose).
+For installation of packages, please refer to [original repository](https://github.com/yangsenius/TransPose).
 
 I installed all packages from anaconda as possible since I am using conda environment. For exmaple,
 > conda install -c anaconda pandas
@@ -29,5 +29,6 @@ However, there will be an exception when installing opencv-python. The opencv-py
 If your device is running on  Ubuntu Server and **no** open-GL related driver is installed, use _pip install opencv-python-headless_ instead. 
 
 ### Dataset Preparation
-For download of COCO dataset, please refer to: https://gist.github.com/mkocabas/a6177fc00315403d31572e17700d7fd9 .
+For download of COCO dataset, please refer to [here](https://gist.github.com/mkocabas/a6177fc00315403d31572e17700d7fd9).
 
+TransPose follow the the steps of [HRNet](https://github.com/leoxiaobin/deep-high-resolution-net.pytorch#data-preparation) to prepare the COCO train/val/test dataset and the annotations.
