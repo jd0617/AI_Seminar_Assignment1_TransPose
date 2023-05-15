@@ -30,24 +30,24 @@ Build the model(model) with:
 
 Procedure model.forward(x):
   begin
-   x: model.convolution2D_1(input=x)
-   x: model.batch_normalization(input=x)
-   x: model.relu(input=x)
-   x: model.max_pooling(input=x)
+   x: model.convolution2D_1(input=x);
+   x: model.batch_normalization(input=x);
+   x: model.relu(input=x);
+   x: model.max_pooling(input=x);
    
-   x: model.ResNet_layer1(input=x)
-   x: model.ResNet_layer2(input=x)
-   x: model.convolution2D_2(x)
+   x: model.ResNet_layer1(input=x);
+   x: model.ResNet_layer2(input=x);
+   x: model.convolution2D_2(x);
    
-   bs, c, h, w: x.shape
-   x: flatten(axis=2)(input=x)
-   x: view x as shape of [h*w, bs, c]
-   x: model.TransformerEncoder(Input=x)
-   x: view x as shape of [bs, c, h, w]
-   x: model.deconvolution(input=x)
-   output: model.final_convolution2D(input=x)
+   bs, c, h, w: x.shape;
+   x: flatten(axis=2)(input=x);
+   x: view x as shape of [h*w, bs, c];
+   x: model.TransformerEncoder(Input=x);
+   x: view x as shape of [bs, c, h, w];
+   x: model.deconvolution(input=x);
+   output: model.final_convolution2D(input=x);
    
-   Return output
+   Return output;
   end;
 ```
 
