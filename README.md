@@ -62,7 +62,7 @@ Procedure model.forward(x):
 ### Installation
 For installation of packages, please refer to [original repository](https://github.com/yangsenius/TransPose).
 
-I installed all packages from anaconda using _conda install_ as possible since I am using conda environment. For exmaple,
+I installed all packages from anaconda using _conda install_ as possible since I am using conda environment. For example,
 > conda install -c anaconda pandas
 
 However, there is an **exception** when installing opencv-python. The opencv-python package installed using _conda install -c conda-forge opencv_ may causing the import failure. Therefore, here I suggest to install opencv through pip:
