@@ -1,3 +1,6 @@
+## Declaration
+This is not an official repository or re-implementation of TransPose. This repository is for **assignment submission purpose only**. For original TransPose, please visit to their [official repository](https://github.com/yangsenius/TransPose).
+
 ## Introduction
 
 **[TransPose](https://arxiv.org/abs/2012.14214)** is a human pose estimation model based on a CNN feature extractor, a Transformer Encoder, and a prediction head. Given an image, the attention layers built in Transformer can efficiently capture long-range spatial relationships between keypoints and explain what dependencies the predicted keypoints locations highly rely on. 
