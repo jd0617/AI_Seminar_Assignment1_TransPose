@@ -1,5 +1,5 @@
 # AI_Seminar_Assignment-1_TransPose
-This is a repository about the Assignment 1 of subject AI Seminar 2023-1. The aim of this assignment is to run a published deep learning project successfully and perform a minor modification to the original code.
+This is a repository about the Assignment 1 of subject AI Seminar 2023-1. The aim of this assignment is to run a published  deep learning project successfully and perform a minor modification to the original code.
 
 ## Introduction
 [TransPose](https://github.com/yangsenius/TransPose) is a Human Pose Estimation(HPE) project established by Yang, Sen, et al. in International Conference on Computer Vision 2021. This project implements Transformer Encoder in existed HPE deep learning model. They aimed to further help the understanding of spatial dependencies the model captures to localize the human's keypoints. The attention layers built in Transformer encoder enable the capturing of long-range relationships efficiently. The attention map further reveal what dependencies the predicted keypoints rely on. 
@@ -19,7 +19,34 @@ The second modification is the Ground truth heatmap. The default ground truth he
 | TransPose-R-Enc3 |  256x192   |  1.5 | 0.720 | 0.914 | 0.792  | 0.688  | 0.769  | 0.751 | 0.921 | 0.815  | 0.715  | 0.805  |
 
 ### Pseudo code
+```
+Input: x: cropped single human RGB image
+Output: hm: heatmaps of 17 heatmaps
 
+Build the model(model) with:
+ - ResNet-50 as CNN backbone
+ - 3 Transformer Encoder
+ - RGB single human image as input
+
+Procedure model.forward(x):
+  begin
+   x: model.convolution2D(input=x)
+   x: model.batch_normalization(input=x)
+   x: model.relu(input=x)
+   x: model.max_pooling(input=x)
+   
+   x: model.ResNet_layer1(input=x)
+   x: model.ResNet_layer2(input=x)
+   x: model.convolution2D(x)
+   
+   bs, c, h, w: x.shape
+   x: flatten(axis=2)(input=x)
+   x: view x as shape of [h*w, bs, c]
+   x: model.TransformerEncoder(Input=x)
+   x: view x as shape of [h*w, bs, c]
+   
+
+```
 
 ## Environment, Framework and Installation
 ### Environment and Framework
