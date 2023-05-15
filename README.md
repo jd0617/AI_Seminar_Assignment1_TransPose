@@ -65,10 +65,10 @@ For installation of packages, please refer to [original repository](https://gith
 I installed all packages from anaconda using _conda install_ as possible since I am using conda environment. For example,
 > conda install -c anaconda pandas
 
-However, there is an **exception** when installing opencv-python. The opencv-python package installed using _conda install -c conda-forge opencv_ may causing the import failure. Therefore, here I suggest to install opencv through pip:
+However, there is an **exception** when installing opencv-python. The opencv-python package installed using ```conda install -c conda-forge opencv``` may causing the import failure. Therefore, here I suggest to install opencv through pip:
 >pip install opencv-python
 
-If your device is running on  Ubuntu Server and **no** open-GL related driver is installed, use _pip install opencv-python-headless_ instead. 
+If your device is running on  Ubuntu Server and **no** open-GL related driver is installed, use ```pip install opencv-python-headless``` instead. 
 
 ### Dataset Preparation
 For download of COCO dataset, please refer to [here](https://gist.github.com/mkocabas/a6177fc00315403d31572e17700d7fd9).
